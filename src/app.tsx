@@ -4,6 +4,7 @@ import { readNight } from './digest/read.js';
 import { sortRows } from './digest/sort.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
+import { DigestPage, NoDigest } from './views/digest.js';
 import { Layout } from './views/layout.js';
 import { StatusBoard } from './views/status.js';
 
@@ -29,6 +30,25 @@ export function createApp(config: RigConfig = loadConfig()) {
       rows: sortRows(digest.rows),
       badLines: digest.badLines,
     });
+  });
+
+  app.get('/digest/:night', (c) => {
+    const night = c.req.param('night');
+    // Only plain dates reach the reader: the param becomes a file name.
+    const digest = /^\d{4}-\d{2}-\d{2}$/.test(night) ? readNight(config.runsDir, night) : null;
+    if (!digest) {
+      return c.html(
+        <Layout title={`digest · ${night}`} lane={lane()}>
+          <NoDigest night={night} />
+        </Layout>,
+        404,
+      );
+    }
+    return c.html(
+      <Layout title={`digest · ${night}`} lane={lane()}>
+        <DigestPage digest={digest} />
+      </Layout>,
+    );
   });
 
   return app;
