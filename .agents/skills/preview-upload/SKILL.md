@@ -54,7 +54,16 @@ npx -y wrangler@4 pages deployment list --project-name <project> --json
 npx -y wrangler@4 pages deployment delete <deployment-id> --project-name <project>
 ```
 
-`-f` only if wrangler says the deployment still has an active alias. Then open both the main link and the old deployment links and check the banner.
+`-f` only if wrangler says the deployment still has an active alias. In a non-interactive shell
+`deployment delete` asks for confirmation and falls back to "no", so nothing is deleted. Delete it
+through the API instead, with the same token:
+
+```sh
+curl -s -X DELETE -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/<project>/deployments/<deployment-id>"
+```
+
+List again to check it is gone. Then open both the main link and the old deployment links and check the banner.
 
 ## Take it down
 
