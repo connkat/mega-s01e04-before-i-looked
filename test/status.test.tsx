@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 
@@ -11,6 +12,15 @@ describe('status board', () => {
     expect(res.status).toBe(200);
     expect(html).toContain('TEST-MARKER');
     expect(html).toContain('2026-10-28');
+  });
+
+  it('links each night on disk to its digest', async () => {
+    const html = await (await createApp(config).request('/')).text();
+    const nights = readdirSync('runs')
+      .filter((f) => /^\d{4}-\d{2}-\d{2}\.jsonl$/.test(f))
+      .map((f) => f.slice(0, 10));
+    expect(nights).toHaveLength(2);
+    for (const n of nights) expect(html).toContain(`href="/digest/${n}"`);
   });
 
   it('health answers with the lane id', async () => {
